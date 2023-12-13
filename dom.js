@@ -28,17 +28,52 @@ window.addEventListener("DOMContentLoaded", () => {
 
 
 function deleteItem(e){
-    // if(confirm('Are You Sure?')){
-    //     var li = e.target.parentElement;
-    //     var liContent = li.innerText;
-    //     const str = liContent.split("-");
-    //     var key = str[1].trim();
+    if(confirm('Are You Sure?')){
+        var li = e.target.parentElement;
+        var liContent = li.innerText;
+        const str = liContent.split("-");
+        var email = str[1].trim();
 
-    //     var list = document.getElementById('listCon');
-    //     list.removeChild(li);       
+        deletePromise(email)
+        .then((response) => {
+            console.log(response);
+            var list = document.getElementById('listCon');
+            list.removeChild(li);
+        })
+        .catch(errorMessage => {
+            console.log(errorMessage);
+        });
+    }
+}
+
+function deletePromise(email) {
+    return new Promise((resolve, reject) => {
         
-    //     localStorage.removeItem(key);
-    // }
+        axios.get('https://crudcrud.com/api/27be5d3cc75743f98ab4a2af5e87337f/appointmentData', {
+            params: {email}
+        })
+        .then(response => {
+            const foundUser = response.data[0];
+
+            if (foundUser) {
+                
+                const userIdToDelete = foundUser._id;
+
+                axios.delete(`https://crudcrud.com/api/27be5d3cc75743f98ab4a2af5e87337f/appointmentData/${userIdToDelete}`)
+                    .then(deleteResponse => {
+                        resolve(deleteResponse);
+                    })
+                    .catch(deleteError => {
+                        reject(`Error deleting user: ${deleteError}`);
+                    });
+            } else {
+                reject(`User with name ${email} not found.`);
+            }
+        })
+        .catch(error => {
+            reject(`Error searching for user: ${error}`);
+        });
+    });
 }
 
 function showNewUserOnScreen(obj){
